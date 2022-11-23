@@ -1,0 +1,22 @@
+chooser = "rofi -dmenu"
+
+[types]
+
+[types.url]
+open_with = "xdg-open"
+
+[types.folder]
+open_with = "alacritty --working-directory {} -t devterm"
+
+
+[[bookmarks]]
+content = "https://www.youtube.com/watch?v=Q0oIoR9mLwc"
+description = "Red Hot Chili Peppers - Dark Necessities (Official Music Video)"
+tags = ["music", "video"]
+type = "url"
+
+[[bookmarks]]
+content = "~/dev"
+description = "My development folder"
+tags = ["dev", "folder"]
+type = "folder"
