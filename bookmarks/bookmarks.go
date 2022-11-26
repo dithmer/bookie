@@ -28,10 +28,10 @@ type Config struct {
 	Bookmarks []Bookmark      `toml:"bookmarks"`
 }
 
-func NewConfig() (*Config, error) {
+func NewConfig(path string) (*Config, error) {
 	config := &Config{}
 
-	file, err := os.Open("bookmarks.toml")
+	file, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open bookmarks.toml: %w", err)
 	}
