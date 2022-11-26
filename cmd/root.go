@@ -16,7 +16,7 @@ It is written in Go and uses a TOML config file.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := bookmarks.NewConfig(configPath)
 		if err != nil {
-			log.Fatal("Error while reading config from", configPath, ":", err)
+			log.Fatal("Error while reading config from ", configPath, ": ", err)
 		}
 
 		err = config.OpenBookmark()
@@ -37,6 +37,6 @@ func init() {
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
-		log.Fatal("Error while executing root command:", err)
+		log.Fatal("Error while executing root command: ", err)
 	}
 }
