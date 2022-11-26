@@ -51,6 +51,22 @@ func NewConfig(path string) (*Config, error) {
 	return config, nil
 }
 
+func (c *Config) OpenBookmark() error {
+	b, err := chooseBookmark(c.Chooser, c.Bookmarks)
+	if err != nil {
+		return err
+	}
+
+	openWith, err := getOpenerForBookmark(c.Types, b)
+	if err != nil {
+		return fmt.Errorf("failed to get opener for bookmark: %w", err)
+	}
+
+	b = formatContentByType(b)
+
+	return open(openWith, b)
+}
+
 func (c *Config) AddBookmark(b Bookmark) error {
 	c.Bookmarks = append(c.Bookmarks, b)
 	return nil
@@ -92,12 +108,18 @@ func (c *Config) Save(path string) error {
 	return nil
 }
 
-func (c *Config) open(b Bookmark) error {
-	t, ok := c.Types[b.Type]
-	if !ok {
-		return fmt.Errorf("no type %s found", b.Type)
+func open(openWith string, b Bookmark) error {
+	if !strings.Contains(openWith, "{}") {
+		openWith = fmt.Sprintf("%s {}", openWith)
 	}
+	openWith = strings.Replace(openWith, "{}", b.Content, 1)
 
+	args := strings.Split(openWith, " ")
+	cmd := exec.Command(args[0], args[1:]...) // nolint:gosec
+	return cmd.Run()
+}
+
+func formatContentByType(b Bookmark) Bookmark {
 	switch b.Type {
 	case "folder":
 		if b.Content[0] == '~' {
@@ -105,27 +127,36 @@ func (c *Config) open(b Bookmark) error {
 		}
 	}
 
-	if !strings.Contains(t.OpenWith, "{}") {
-		t.OpenWith = fmt.Sprintf("%s {}", t.OpenWith)
-	}
-	t.OpenWith = strings.Replace(t.OpenWith, "{}", b.Content, 1)
-
-	args := strings.Split(t.OpenWith, " ")
-	cmd := exec.Command(args[0], args[1:]...) // nolint:gosec
-	return cmd.Run()
+	return b
 }
 
-func (c *Config) OpenBookmark() error {
-	b, err := c.chooseBookmark()
-	if err != nil {
-		return err
+func getOpenerForBookmark(t map[string]Type, b Bookmark) (string, error) {
+	bt, ok := t[b.Type]
+	if !ok {
+		return "", fmt.Errorf("no type %s found", b.Type)
 	}
 
-	return c.open(b)
+	return bt.OpenWith, nil
 }
 
-func (c *Config) chooseBookmark() (Bookmark, error) {
-	args := strings.Split(c.Chooser, " ")
+func filterByTags(bookmarks []Bookmark, tags ...string) []Bookmark {
+	var b []Bookmark
+
+	for _, bookmark := range bookmarks {
+		for _, tag := range tags {
+			for _, t := range bookmark.Tags {
+				if t == tag {
+					b = append(b, bookmark)
+				}
+			}
+		}
+	}
+
+	return b
+}
+
+func chooseBookmark(chooser string, bookmarks []Bookmark) (Bookmark, error) {
+	args := strings.Split(chooser, " ")
 
 	var cmd *exec.Cmd
 	if len(args) == 1 {
@@ -141,7 +172,7 @@ func (c *Config) chooseBookmark() (Bookmark, error) {
 
 	go func() {
 		defer stdin.Close()
-		for i, bookmark := range c.Bookmarks {
+		for i, bookmark := range bookmarks {
 			_, err := fmt.Fprintf(stdin, "%d: %s(%s)\n", i, bookmark.Description, bookmark.Content)
 			if err != nil {
 				return
@@ -159,5 +190,5 @@ func (c *Config) chooseBookmark() (Bookmark, error) {
 		return Bookmark{}, fmt.Errorf("failed to convert index to int: %w", err)
 	}
 
-	return c.Bookmarks[index], nil
+	return bookmarks[index], nil
 }
