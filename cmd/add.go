@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"log"
+
 	"github.com/dithmer/bookie/bookmarks"
 	"github.com/spf13/cobra"
 )
@@ -12,7 +14,7 @@ var addCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := bookmarks.NewConfig("bookmarks.toml")
 		if err != nil {
-			panic(err)
+			log.Fatal("Error while reading config from bookmarks.toml:", err)
 		}
 
 		err = config.AddBookmark(bookmarks.Bookmark{
@@ -22,7 +24,7 @@ var addCmd = &cobra.Command{
 			Tags:        tags,
 		})
 		if err != nil {
-			panic(err)
+			log.Fatal("Error while adding bookmark:", err)
 		}
 	},
 }
@@ -46,16 +48,16 @@ func init() {
 
 	err = addCmd.MarkFlagRequired("content")
 	if err != nil {
-		panic(err)
+		log.Fatal("Error while marking flag as required:", err)
 	}
 
 	err = addCmd.MarkFlagRequired("description")
 	if err != nil {
-		panic(err)
+		log.Fatal("Error while marking flag as required:", err)
 	}
 
 	err = addCmd.MarkFlagRequired("type")
 	if err != nil {
-		panic(err)
+		log.Fatal("Error while marking flag as required:", err)
 	}
 }
