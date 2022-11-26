@@ -56,6 +56,28 @@ func (c *Config) AddBookmark(b Bookmark) error {
 	return nil
 }
 
+func (c *Config) ListTags() ([]string, error) {
+	var tags []string
+
+	for _, bookmark := range c.Bookmarks {
+		for _, tag := range bookmark.Tags {
+			contains := false
+			for _, t := range tags {
+				if t == tag {
+					contains = true
+					break
+				}
+			}
+
+			if !contains {
+				tags = append(tags, tag)
+			}
+		}
+	}
+
+	return tags, nil
+}
+
 func (c *Config) Save(path string) error {
 	content, err := toml.Marshal(c)
 	if err != nil {
