@@ -53,16 +53,16 @@ func NewConfig(path string) (*Config, error) {
 
 func (c *Config) AddBookmark(b Bookmark) error {
 	c.Bookmarks = append(c.Bookmarks, b)
-	return c.save()
+	return nil
 }
 
-func (c *Config) save() error {
+func (c *Config) Save(path string) error {
 	content, err := toml.Marshal(c)
 	if err != nil {
 		return fmt.Errorf("failed to marshal config: %w", err)
 	}
 
-	err = os.WriteFile("bookmarks.toml", content, 0644)
+	err = os.WriteFile(path, content, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write config: %w", err)
 	}

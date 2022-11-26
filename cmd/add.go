@@ -26,6 +26,11 @@ var addCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal("Error while adding bookmark:", err)
 		}
+
+		err = config.Save(configPath)
+		if err != nil {
+			log.Fatal("Error while saving config:", err)
+		}
 	},
 }
 
