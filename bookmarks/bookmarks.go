@@ -28,6 +28,10 @@ type Config struct {
 	Bookmarks []Bookmark      `toml:"bookmarks"`
 }
 
+type Query struct {
+	Tags []string
+}
+
 func NewConfig(path string) (*Config, error) {
 	config := &Config{}
 
@@ -51,8 +55,23 @@ func NewConfig(path string) (*Config, error) {
 	return config, nil
 }
 
+func ParseQuery(query string) Query {
+	tags := strings.Split(query, " ")
+	return Query{Tags: tags}
+}
+
 func (c *Config) OpenBookmark() error {
-	b, err := chooseBookmark(c.Chooser, c.Bookmarks)
+	return c.OpenBookmarkWithQuery(Query{})
+}
+
+func (c *Config) OpenBookmarkWithQuery(query Query) error {
+	bookmarks := c.Bookmarks
+
+	if len(query.Tags) > 0 {
+		bookmarks = filterByTags(bookmarks, query.Tags...)
+	}
+
+	b, err := chooseBookmark(c.Chooser, bookmarks)
 	if err != nil {
 		return err
 	}

@@ -19,7 +19,11 @@ It is written in Go and uses a TOML config file.`,
 			log.Fatal("Error while reading config from ", configPath, ": ", err)
 		}
 
-		err = config.OpenBookmark()
+		if query != "" {
+			err = config.OpenBookmarkWithQuery(bookmarks.ParseQuery(query))
+		} else {
+			err = config.OpenBookmark()
+		}
 		if err != nil {
 			log.Fatal("Error while opening bookmark:", err)
 		}
@@ -27,11 +31,14 @@ It is written in Go and uses a TOML config file.`,
 }
 
 var configPath string
+var query string
 
 func init() {
 	standardConfigPath := os.Getenv("HOME") + "/.config/bookie/config.toml"
 
 	rootCmd.PersistentFlags().StringVarP(&configPath, "config-path", "p", standardConfigPath, "Path to the config file")
+
+	rootCmd.Flags().StringVarP(&query, "query", "q", "", "Query to search for bookmarks")
 }
 
 func Execute() {
