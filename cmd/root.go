@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"log"
+	"os"
 
 	"github.com/dithmer/bookie/bookmarks"
 	"github.com/spf13/cobra"
@@ -28,7 +29,9 @@ It is written in Go and uses a TOML config file.`,
 var configPath string
 
 func init() {
-	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "bookmarks.toml", "Path to the config file")
+	standardConfigPath := os.Getenv("HOME") + "/.config/bookie/config.toml"
+
+	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", standardConfigPath, "Path to the config file")
 }
 
 func Execute() {
