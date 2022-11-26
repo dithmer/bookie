@@ -31,7 +31,7 @@ var configPath string
 func init() {
 	standardConfigPath := os.Getenv("HOME") + "/.config/bookie/config.toml"
 
-	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", standardConfigPath, "Path to the config file")
+	rootCmd.PersistentFlags().StringVarP(&configPath, "config-path", "p", standardConfigPath, "Path to the config file")
 }
 
 func Execute() {
