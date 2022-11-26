@@ -13,7 +13,6 @@ var rootCmd = &cobra.Command{
 	Long: `A bookmark manager that allows you to open bookmarks from the command line.
 It is written in Go and uses a TOML config file.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		configPath := "bookmarks.toml"
 		config, err := bookmarks.NewConfig(configPath)
 		if err != nil {
 			log.Fatal("Error while reading config from", configPath, ":", err)
@@ -24,6 +23,12 @@ It is written in Go and uses a TOML config file.`,
 			log.Fatal("Error while opening bookmark:", err)
 		}
 	},
+}
+
+var configPath string
+
+func init() {
+	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "bookmarks.toml", "Path to the config file")
 }
 
 func Execute() {

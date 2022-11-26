@@ -12,7 +12,7 @@ var addCmd = &cobra.Command{
 	Short: "Add a new bookmark",
 	Long:  `Add a new bookmark to the config file`,
 	Run: func(cmd *cobra.Command, args []string) {
-		config, err := bookmarks.NewConfig("bookmarks.toml")
+		config, err := bookmarks.NewConfig(configPath)
 		if err != nil {
 			log.Fatal("Error while reading config from bookmarks.toml:", err)
 		}
