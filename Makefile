@@ -7,3 +7,6 @@ format:
 install_latest:
 	curl -L "https://github.com/dithmer/bookie/releases/download/latest/bookie" -o "$$HOME/.local/bin/bookie"
 	chmod +x "$$HOME/.local/bin/bookie"
+
+install_dev:
+	go build -o "$$HOME/.local/bin/bookie" .
