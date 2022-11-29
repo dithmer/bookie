@@ -3,11 +3,23 @@ chooser = "rofi -dmenu"
 [types]
 
 [types.url]
-open_with = "xdg-open"
+open_with = { default = "xdg-open", bash = "w3m {}" }
 
 [types.folder]
-open_with = "alacritty --working-directory {} -t devterm"
+open_with = { default = "alacritty --working-directory {} -t devterm", bash = "cd {}" }
 
+[types.google]
+open_with = { default = "xdg-open google.de/s=?{}", bash = "googler {}" }
+
+[types.snippet]
+# TODO: READLINE_POINT is set with 9999 to cheat end of line, add a template language
+open_with = { default = 'false', bash = 'READLINE_LINE="{}"; READLINE_POINT=9999' }
+
+[[bookmarks]]
+content = 'ls -latr'
+description = 'list files in current directory'
+tags = ['ls', 'files', 'dev', 'snippet']
+type = 'snippet'
 
 [[bookmarks]]
 content = "https://www.youtube.com/watch?v=Q0oIoR9mLwc"
@@ -20,3 +32,21 @@ content = "~/dev"
 description = "My development folder"
 tags = ["dev", "folder"]
 type = "folder"
+
+[[bookmarks]]
+content = "/tmp"
+description = "Temporary folder"
+tags = ["tmp", "folder"]
+type = "folder"
+
+[[bookmarks]]
+content = "/etc"
+description = "System configuration folder"
+tags = ["etc", "folder"]
+type = "folder"
+
+[[bookmarks]]
+content = "stackoverflow go"
+description = "Stackoverflow search for go"
+tags = ["stackoverflow", "go"]
+type = "google"
