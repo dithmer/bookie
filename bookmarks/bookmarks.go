@@ -12,7 +12,7 @@ import (
 )
 
 type Type struct {
-	OpenWith string `toml:"open_with"`
+	OpenWith map[string]string `toml:"open_with"`
 }
 
 type Bookmark struct {
@@ -60,11 +60,11 @@ func ParseQuery(query string) Query {
 	return Query{Tags: tags}
 }
 
-func (c *Config) OpenBookmark() error {
-	return c.OpenBookmarkWithQuery(Query{})
+func (c *Config) OpenBookmark(openWithType string, openWithFile string) error {
+	return c.OpenBookmarkWithQuery(Query{}, openWithType, openWithFile)
 }
 
-func (c *Config) OpenBookmarkWithQuery(query Query) error {
+func (c *Config) OpenBookmarkWithQuery(query Query, openWithType string, openWithFile string) error {
 	bookmarks := c.Bookmarks
 
 	if len(query.Tags) > 0 {
@@ -76,14 +76,14 @@ func (c *Config) OpenBookmarkWithQuery(query Query) error {
 		return err
 	}
 
-	openWith, err := getOpenerForBookmark(c.Types, b)
+	openWith, err := getOpenerForBookmark(c.Types, b, openWithType)
 	if err != nil {
 		return fmt.Errorf("failed to get opener for bookmark: %w", err)
 	}
 
 	b = formatContentByType(b)
 
-	return open(openWith, b)
+	return open(openWith, b, openWithType, openWithFile)
 }
 
 func (c *Config) AddBookmark(b Bookmark) error {
@@ -127,15 +127,27 @@ func (c *Config) Save(path string) error {
 	return nil
 }
 
-func open(openWith string, b Bookmark) error {
+func open(openWith string, b Bookmark, openWithType string, openWithFile string) error {
 	if !strings.Contains(openWith, "{}") {
 		openWith = fmt.Sprintf("%s {}", openWith)
 	}
 	openWith = strings.Replace(openWith, "{}", b.Content, 1)
 
-	args := strings.Split(openWith, " ")
-	cmd := exec.Command(args[0], args[1:]...) // nolint:gosec
-	return cmd.Run()
+	switch openWithType {
+	case "bash":
+		err := os.WriteFile(openWithFile, []byte(openWith), 0600)
+		if err != nil {
+			return fmt.Errorf("failed to write openWithFile: %w", err)
+		}
+	default:
+		args := strings.Split(openWith, " ")
+		cmd := exec.Command(args[0], args[1:]...) // nolint:gosec
+		err := cmd.Run()
+		if err != nil {
+			return fmt.Errorf("failed to open bookmark: %w", err)
+		}
+	}
+	return nil
 }
 
 func formatContentByType(b Bookmark) Bookmark {
@@ -149,13 +161,18 @@ func formatContentByType(b Bookmark) Bookmark {
 	return b
 }
 
-func getOpenerForBookmark(t map[string]Type, b Bookmark) (string, error) {
+func getOpenerForBookmark(t map[string]Type, b Bookmark, o string) (string, error) {
 	bt, ok := t[b.Type]
 	if !ok {
 		return "", fmt.Errorf("no type %s found", b.Type)
 	}
 
-	return bt.OpenWith, nil
+	openWith, ok := bt.OpenWith[o]
+	if !ok {
+		openWith = bt.OpenWith["default"]
+	}
+
+	return openWith, nil
 }
 
 func filterByTags(bookmarks []Bookmark, tags ...string) []Bookmark {
